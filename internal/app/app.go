@@ -33,39 +33,31 @@ func Start() error {
 		return err
 	}
 
-	// вывод посылок клиента
 	err = service.PrintClientParcels(client)
 	if err != nil {
 		return err
 	}
 
-	// попытка удаления отправленной посылки
 	err = service.Delete(p.Number)
 	if err != nil {
 		return err
 	}
 
-	// вывод посылок клиента
-	// предыдущая посылка не должна удалиться, т.к. её статус НЕ «зарегистрирована»
 	err = service.PrintClientParcels(client)
 	if err != nil {
 		return err
 	}
 
-	// регистрация новой посылки
 	p, err = service.Register(client, address)
 	if err != nil {
 		return err
 	}
 
-	// удаление новой посылки
 	err = service.Delete(p.Number)
 	if err != nil {
 		return err
 	}
 
-	// вывод посылок клиента
-	// здесь не должно быть последней посылки, т.к. она должна была успешно удалиться
 	err = service.PrintClientParcels(client)
 	if err != nil {
 		return err
