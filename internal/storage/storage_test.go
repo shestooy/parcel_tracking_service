@@ -52,8 +52,9 @@ func TestAddGetDelete(t *testing.T) {
 	// delete
 	err = store.Delete(id)
 	require.NoError(t, err)
-	err = store.Delete(id)
+	p, err = store.Get(id)
 	require.Error(t, err)
+	require.Empty(t, p)
 }
 
 // TestSetAddress проверяет обновление адреса
@@ -145,6 +146,9 @@ func TestGetByClient(t *testing.T) {
 
 	// check
 	for _, parcel := range storedParcels {
+		if _, ok := parcelMap[parcel.Number]; !ok {
+			t.Fatalf("Parcel with id %d not found in parcelMap", parcel.Number)
+		}
 		require.Equal(t, parcel, parcelMap[parcel.Number])
 	}
 }

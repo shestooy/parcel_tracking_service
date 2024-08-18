@@ -27,11 +27,11 @@ func NewParcelStore(db *sql.DB) ParcelStore {
 }
 
 func (s *ParcelStore) Add(p Parcel) (int64, error) {
-	res, err := s.db.Exec("INSERT INTO parcel (client,status,address,created_at) VALUES (:c, :s, :a, :cr)",
-		sql.Named("c", p.Client),
-		sql.Named("s", p.Status),
-		sql.Named("a", p.Address),
-		sql.Named("cr", p.CreatedAt))
+	res, err := s.db.Exec("INSERT INTO parcel (client,status,address,created_at) VALUES (:client, :status, :address, :created_at)",
+		sql.Named("client", p.Client),
+		sql.Named("status", p.Status),
+		sql.Named("address", p.Address),
+		sql.Named("created_at", p.CreatedAt))
 	if err != nil {
 		return 0, err
 	}
@@ -43,8 +43,8 @@ func (s *ParcelStore) Add(p Parcel) (int64, error) {
 }
 
 func (s *ParcelStore) Get(number int64) (Parcel, error) {
-	row := s.db.QueryRow("SELECT number, client, status,address, created_at FROM parcel WHERE number = :n",
-		sql.Named("n", number))
+	row := s.db.QueryRow("SELECT number, client, status,address, created_at FROM parcel WHERE number = :number",
+		sql.Named("number", number))
 
 	p := Parcel{}
 	err := row.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
@@ -57,8 +57,8 @@ func (s *ParcelStore) Get(number int64) (Parcel, error) {
 }
 
 func (s *ParcelStore) GetByClient(client int) ([]Parcel, error) {
-	row, err := s.db.Query("SELECT number, client, status,address, created_at FROM parcel WHERE client = :c",
-		sql.Named("c", client))
+	row, err := s.db.Query("SELECT number, client, status,address, created_at FROM parcel WHERE client = :client",
+		sql.Named("client", client))
 
 	if err != nil {
 		return nil, err
@@ -76,14 +76,17 @@ func (s *ParcelStore) GetByClient(client int) ([]Parcel, error) {
 
 		res = append(res, p)
 	}
-
+	err = row.Err()
+	if err != nil {
+		return nil, err
+	}
 	return res, nil
 }
 
 func (s *ParcelStore) SetStatus(number int64, status string) error {
-	_, err := s.db.Exec("UPDATE parcel SET status = :s WHERE number = :n",
-		sql.Named("s", status),
-		sql.Named("n", number))
+	_, err := s.db.Exec("UPDATE parcel SET status = :status WHERE number = :number",
+		sql.Named("status", status),
+		sql.Named("number", number))
 	if err != nil {
 		return err
 	}
@@ -92,23 +95,11 @@ func (s *ParcelStore) SetStatus(number int64, status string) error {
 }
 
 func (s *ParcelStore) SetAddress(number int64, address string) error {
-	row := s.db.QueryRow("SELECT status FROM parcel WHERE number = :n",
-		sql.Named("n", number))
 
-	var status string
-	err := row.Scan(&status)
-
-	if err != nil {
-		return err
-	}
-
-	if status != "registered" {
-		return nil
-	}
-
-	_, err = s.db.Exec("UPDATE parcel SET address = :a WHERE number = :n",
-		sql.Named("a", address),
-		sql.Named("n", number))
+	_, err := s.db.Exec("UPDATE parcel SET address = :address WHERE number = :number AND status = :status",
+		sql.Named("address", address),
+		sql.Named("number", number),
+		sql.Named("status", ParcelStatusRegistered))
 
 	if err != nil {
 		return err
@@ -117,21 +108,9 @@ func (s *ParcelStore) SetAddress(number int64, address string) error {
 }
 
 func (s *ParcelStore) Delete(number int64) error {
-	row := s.db.QueryRow("SELECT status FROM parcel WHERE number = :n",
-		sql.Named("n", number))
-
-	var status string
-	err := row.Scan(&status)
-
-	if err != nil {
-		return err
-	}
-	if status != "registered" {
-		return nil
-	}
-
-	_, err = s.db.Exec("DELETE FROM parcel WHERE number = :n",
-		sql.Named("n", number))
+	_, err := s.db.Exec("DELETE FROM parcel WHERE number = :number AND status = :status",
+		sql.Named("number", number),
+		sql.Named("status", ParcelStatusRegistered))
 
 	if err != nil {
 		return err
