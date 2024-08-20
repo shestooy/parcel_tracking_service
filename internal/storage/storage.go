@@ -118,3 +118,7 @@ func (s *ParcelStore) Delete(number int64) error {
 
 	return nil
 }
+
+func (s *ParcelStore) Close() error {
+	return s.db.Close()
+}
