@@ -7,10 +7,12 @@ WORKDIR /cmd/app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . . 
+COPY . .
 RUN go build -o /app/main cmd/app/main.go
 
-FROM debian:bullseye-slim
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/main /app/main
 
@@ -18,5 +20,4 @@ WORKDIR /app
 
 EXPOSE 8080
 
-# Команда для запуска приложения
 CMD ["/app/main"]

@@ -23,8 +23,7 @@ services:
       MYSQL_ROOT_PASSWORD: turbinaturbina1
       MYSQL_DATABASE: tracker
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/mysql
-
 volumes:
   db_data:
