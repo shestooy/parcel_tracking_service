@@ -3,11 +3,13 @@ package app
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	f "parcel_tracking_service/internal/flags"
 	r "parcel_tracking_service/internal/httpserver"
 	m "parcel_tracking_service/internal/model"
 	s "parcel_tracking_service/internal/storage"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -17,6 +19,8 @@ var service m.ParcelService
 func Start() error {
 	f.ParseFlags()
 
+	time.Sleep(4 * time.Second) // чтобы контейнер БД успел развернуться
+	log.Println("Start server on " + f.EndPoint)
 	db, err := DBConnect()
 	if err != nil {
 		return err
