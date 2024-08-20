@@ -5,7 +5,7 @@ import (
 	m "parcel_tracking_service/internal/storage"
 	"time"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type ParcelService struct {

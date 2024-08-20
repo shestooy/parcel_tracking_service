@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - ADDRESS=localhost:8082
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=turbinaturbina1
+      - DB_NAME=tracker
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: turbinaturbina1
+      MYSQL_DATABASE: tracker
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

@@ -11,11 +11,11 @@ const (
 )
 
 type Parcel struct {
-	Number    int64
-	Client    int
-	Status    string
-	Address   string
-	CreatedAt string
+	Number    int64  `json:"number"`
+	Client    int    `json:"client"`
+	Status    string `json:"status"`
+	Address   string `json:"address"`
+	CreatedAt string `json:"created_at"`
 }
 
 type ParcelStore struct {
