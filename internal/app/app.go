@@ -2,65 +2,52 @@ package app
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
+	"net/http"
+	f "parcel_tracking_service/internal/flags"
+	r "parcel_tracking_service/internal/httpserver"
 	m "parcel_tracking_service/internal/model"
 	s "parcel_tracking_service/internal/storage"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
+var service m.ParcelService
+
 func Start() error {
-	db, err := sql.Open("sqlite", "internal/db/tracker.db")
+	f.ParseFlags()
+
+	time.Sleep(4 * time.Second) // чтобы контейнер БД успел развернуться
+	log.Println("Start server on " + f.EndPoint)
+	db, err := DBConnect()
 	if err != nil {
 		return err
 	}
-	defer db.Close()
-	store := s.NewParcelStore(db)
-	service := m.NewParcelService(store)
+	service = m.NewParcelService(s.NewParcelStore(db))
 
-	client := 1
-	address := "Псков, д. Пушкина, ул. Колотушкина, д. 5"
-	p, err := service.Register(client, address)
+	err = http.ListenAndServe(f.EndPoint, r.GetRouter())
 	if err != nil {
 		return err
 	}
-
-	newAddress := "Саратов, д. Верхние Зори, ул. Козлова, д. 25"
-	err = service.ChangeAddress(p.Number, newAddress)
-	if err != nil {
-		return err
-	}
-
-	err = service.NextStatus(p.Number)
-	if err != nil {
-		return err
-	}
-
-	err = service.PrintClientParcels(client)
-	if err != nil {
-		return err
-	}
-
-	err = service.Delete(p.Number)
-	if err != nil {
-		return err
-	}
-
-	err = service.PrintClientParcels(client)
-	if err != nil {
-		return err
-	}
-
-	p, err = service.Register(client, address)
-	if err != nil {
-		return err
-	}
-
-	err = service.Delete(p.Number)
-	if err != nil {
-		return err
-	}
-
-	err = service.PrintClientParcels(client)
-	if err != nil {
+	if err = service.Close(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func DBConnect() (*sql.DB, error) {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		f.DBUser, f.DPPass, f.DBHost, f.DBPort, f.DPName)
+
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }

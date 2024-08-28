@@ -11,11 +11,11 @@ const (
 )
 
 type Parcel struct {
-	Number    int64
-	Client    int
-	Status    string
-	Address   string
-	CreatedAt string
+	Number    int64  `json:"number"`
+	Client    int    `json:"client"`
+	Status    string `json:"status"`
+	Address   string `json:"address"`
+	CreatedAt string `json:"created_at"`
 }
 
 type ParcelStore struct {
@@ -117,4 +117,8 @@ func (s *ParcelStore) Delete(number int64) error {
 	}
 
 	return nil
+}
+
+func (s *ParcelStore) Close() error {
+	return s.db.Close()
 }

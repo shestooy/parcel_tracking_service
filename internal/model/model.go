@@ -4,8 +4,6 @@ import (
 	"fmt"
 	m "parcel_tracking_service/internal/storage"
 	"time"
-
-	_ "modernc.org/sqlite"
 )
 
 type ParcelService struct {
@@ -80,4 +78,8 @@ func (s ParcelService) ChangeAddress(number int64, address string) error {
 
 func (s ParcelService) Delete(number int64) error {
 	return s.store.Delete(number)
+}
+
+func (s ParcelService) Close() error {
+	return s.store.Close()
 }
